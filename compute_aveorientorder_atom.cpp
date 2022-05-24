@@ -388,8 +388,8 @@ void ComputeOrientAveOrderAtom::compute_peratom()
 	    tmp_sum_qnm_r = tmp_sum_qnm_r / (nnn + 1);
 	    tmp_sum_qnm_i = tmp_sum_qnm_i / (nnn + 1);
 	    tmp_sum_qn += tmp_sum_qnm_r*tmp_sum_qnm_r + tmp_sum_qnm_i*tmp_sum_qnm_i;
-	    lm_count += 2 * (2 * l + 1);
 	  }
+	  lm_count += 2 * (2 * l + 1);
       	  double qnormfac = sqrt(MY_4PI / (2 * l + 1));
 	  qnarray[i][ave_qn_index+il] = qnormfac * sqrt(tmp_sum_qn);
 	}
