@@ -32,6 +32,8 @@ class ComputeOrientAveOrderAtom : public Compute {
   void init_list(int, class NeighList *) override;
   void compute_peratom() override;
   double memory_usage() override;
+  int pack_forward_comm(int, int *, double *, int, int *) override;
+  void unpack_forward_comm(int, int, double *) override;
   double cutsq;
   int iqlcomp, qlcomp, qlcompflag, wlflag, wlhatflag, aveflag;
   int *qlist;

@@ -152,6 +152,7 @@ ComputeOrientAveOrderAtom::ComputeOrientAveOrderAtom(LAMMPS *lmp, int narg, char
       ncol += 2 * (2 * qlist[il] + 1); // add non-nomrlized qnm
     }
     ave_qn_index = ncol;
+    comm_forward = ave_qn_index - qnm_index;
     ncol += nqlist; // Add average values
   }
 
@@ -313,6 +314,7 @@ void ComputeOrientAveOrderAtom::compute_peratom()
 
   // calculate the average values
   if (aveflag) {
+    comm->forward_comm(this);
     for (ii = 0; ii < inum; ii++) {
       i = ilist[ii];
       double *qn = qnarray[i];
@@ -379,14 +381,14 @@ void ComputeOrientAveOrderAtom::compute_peratom()
 	    //                          start     l_start    m_start
 	    tmp_sum_qnm_r += qnarray[i][qnm_index+lm_count+m*2]; // first add center atom
 	    tmp_sum_qnm_i += qnarray[i][qnm_index+lm_count+m*2+1]; // first add center atom
-	    // then add nearest atoms
-	    for (int i_nnn = 0; i_nnn < nnn; i_nnn++) {
+	    // add the neighbors 
+	    for (int i_nnn = 0; i_nnn < ncount; i_nnn++) {
 	      tmp_sum_qnm_r += qnarray[nearest[i_nnn]][qnm_index+lm_count+m*2];
 	      tmp_sum_qnm_i += qnarray[nearest[i_nnn]][qnm_index+lm_count+m*2+1];
 	    }
 	    // calculate the average
-	    tmp_sum_qnm_r = tmp_sum_qnm_r / (nnn + 1);
-	    tmp_sum_qnm_i = tmp_sum_qnm_i / (nnn + 1);
+	    tmp_sum_qnm_r = tmp_sum_qnm_r / (ncount + 1);
+	    tmp_sum_qnm_i = tmp_sum_qnm_i / (ncount + 1);
 	    tmp_sum_qn += tmp_sum_qnm_r*tmp_sum_qnm_r + tmp_sum_qnm_i*tmp_sum_qnm_i;
 	  }
 	  lm_count += 2 * (2 * l + 1);
@@ -798,3 +800,24 @@ void ComputeOrientAveOrderAtom::init_clebsch_gordan()
     }
   }
 }
+
+int ComputeOrientAveOrderAtom::pack_forward_comm(int n, int *list, double *buf, int /*pbc_flag*/,
+                                        int * /*pbc*/)
+{
+  int i, m = 0, j;
+  for (i = 0; i < n; ++i) {
+    for (j = qnm_index; j < ave_qn_index; ++j) { buf[m++] = qnarray[list[i]][j]; }
+  }
+
+  return m;
+}
+
+void ComputeOrientAveOrderAtom::unpack_forward_comm(int n, int first, double *buf)
+{
+  int i, last, m = 0, j;
+  last = first + n;
+  for (i = first; i < last; ++i) {
+    for (j = qnm_index; j < ave_qn_index; ++j) { qnarray[i][j] = buf[m++]; }
+  }
+}
+
