@@ -368,26 +368,27 @@ void ComputeOrientAveOrderAtom::compute_peratom()
 	double tmp_sum_qnm_r;
 	double tmp_sum_qnm_i;
 	double tmp_sum_qn;
-	int lm_count = 0;
+	int lm_count;
+	lm_count = 0;
 	for (int il = 0; il < nqlist; il++) {
 	  int l = qlist[il];
-	  lm_count += 2 * l + 1;
 	  tmp_sum_qn = 0.;
 	  for (int m = 0; m < 2 * l + 1; m++) {
 	    tmp_sum_qnm_r = 0.;
 	    tmp_sum_qnm_i = 0.;
 	    //                          start     l_start    m_start
-	    tmp_sum_qnm_r += qnarray[i][qnm_index+lm_count*2+m*2]; // first add center atom
-	    tmp_sum_qnm_i += qnarray[i][qnm_index+lm_count*2+m*2+1]; // first add center atom
+	    tmp_sum_qnm_r += qnarray[i][qnm_index+lm_count+m*2]; // first add center atom
+	    tmp_sum_qnm_i += qnarray[i][qnm_index+lm_count+m*2+1]; // first add center atom
 	    // then add nearest atoms
 	    for (int i_nnn = 0; i_nnn < nnn; i_nnn++) {
-	      tmp_sum_qnm_r += qnarray[nearest[i_nnn]][qnm_index+lm_count*2+m*2];
-	      tmp_sum_qnm_i += qnarray[nearest[i_nnn]][qnm_index+lm_count*2+m*2+1];
+	      tmp_sum_qnm_r += qnarray[nearest[i_nnn]][qnm_index+lm_count+m*2];
+	      tmp_sum_qnm_i += qnarray[nearest[i_nnn]][qnm_index+lm_count+m*2+1];
 	    }
 	    // calculate the average
 	    tmp_sum_qnm_r = tmp_sum_qnm_r / (nnn + 1);
 	    tmp_sum_qnm_i = tmp_sum_qnm_i / (nnn + 1);
 	    tmp_sum_qn += tmp_sum_qnm_r*tmp_sum_qnm_r + tmp_sum_qnm_i*tmp_sum_qnm_i;
+	    lm_count += 2 * (2 * l + 1);
 	  }
       	  double qnormfac = sqrt(MY_4PI / (2 * l + 1));
 	  qnarray[i][ave_qn_index+il] = qnormfac * sqrt(tmp_sum_qn);
